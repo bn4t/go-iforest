@@ -1,4 +1,4 @@
-// Package go-iforest is an implementation of isolation forests
+// Package go_iforest is an implementation of isolation forests
 // as defined in https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf.
 
 package go_iforest
