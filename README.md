@@ -1,7 +1,7 @@
 # go-iforest
 [![godocs.io](https://godocs.io/github.com/codegaudi/go-iforest?status.svg)](https://godocs.io/github.com/codegaudi/go-iforest)
 
-Golang implementation of [Isolation Forests](https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf).
+Golang implementation of [Isolation Forest](https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf).
 
 ## Example Usage
 ```go
