@@ -1,11 +1,11 @@
-package go_iforest
+package main
 
 import (
 	"math"
 	"math/rand"
 )
 
-const EulersConstant = 0.577215665
+const EulersConstant = 0.5772156649
 
 type ITree struct {
 	// The root node of the tree
@@ -27,10 +27,10 @@ type Node struct {
 	// This is relevant if the max tree size is reached
 	size int
 
-	// the splitpoint of this node
+	// the split point of this node
 	SplitPoint float64
 
-	// index of the attribute used for the splitpoint
+	// index of the attribute used for the split point
 	SplitAttrIndex int
 
 	NodeLeft  *Node
@@ -38,21 +38,29 @@ type Node struct {
 	External  bool
 }
 
-func NewITree(X [][]float64, l float64) *ITree {
+func NewITree(X [][]float64) *ITree {
+	l := math.Ceil(math.Log2(float64(len(X))))
+	var indices []int
+
+	// get initial indices
+	for k := range X {
+		indices = append(indices, k)
+	}
+
 	return &ITree{
-		RootNode:      NextNode(append([][]float64(nil), X...), 0, l),
+		RootNode:      NextNode(X, indices, 0, l),
 		HeightLimit:   l,
 		AvgPathLength: avgPathLength(float64(len(X))),
 	}
 }
 
 // NextNode creates a new node in the tree
-func NextNode(X [][]float64, e float64, l float64) *Node {
+func NextNode(X [][]float64, indices []int, e float64, l float64) *Node {
 	// return an external node, if only one sample remains
 	// or the max tree height is reached.
-	if e >= l || len(X) <= 1 {
+	if e >= l || len(indices) <= 1 {
 		return &Node{
-			size:     len(X),
+			size:     len(indices),
 			External: true,
 		}
 	}
@@ -60,27 +68,26 @@ func NextNode(X [][]float64, e float64, l float64) *Node {
 	// select a random attribute q
 	q := rand.Intn(len(X[0]))
 
-	// choose a splitpoint p between the max and min value of the attribute
-	p := selectSplitPoint(append([][]float64(nil), X...), q)
+	// choose a split point p between the max and min value of the attribute
+	p := selectSplitPoint(X, indices, q)
 
-	var Xl [][]float64
-	var Xr [][]float64
+	var IndicesL []int
+	var IndicesR []int
 
 	// split up the samples in X at the chosen split point
-	for _, v := range X {
-		if v[q] < p {
-			Xl = append(Xl, v)
+	for _, v := range indices {
+		if X[v][q] < p {
+			IndicesL = append(IndicesL, v)
 		} else {
-			Xr = append(Xr, v)
+			IndicesR = append(IndicesR, v)
 		}
 	}
-	//log.Print(p, " --- ",len(Xl), " | ", len(Xr))
 
 	return &Node{
 		SplitPoint:     p,
 		SplitAttrIndex: q,
-		NodeLeft:       NextNode(Xl, e+1, l),
-		NodeRight:      NextNode(Xr, e+1, l),
+		NodeLeft:       NextNode(X, IndicesL, e+1, l),
+		NodeRight:      NextNode(X, IndicesR, e+1, l),
 		External:       false,
 	}
 }
@@ -108,20 +115,22 @@ func PathLength(x []float64, T *Node, e int) float64 {
 	}
 }
 
-func selectSplitPoint(X [][]float64, attrIndex int) float64 {
+// selectSplitPoint chooses a random split point between the max and min value
+// of attribute attrIndex from the provided indices of X
+func selectSplitPoint(X [][]float64, indices []int, attrIndex int) float64 {
 	max := math.SmallestNonzeroFloat64
 	min := math.MaxFloat64
 
-	for i := 0; i < len(X); i++ {
-		if X[i][attrIndex] > max {
-			max = X[i][attrIndex]
+	for _, v := range indices {
+		if X[v][attrIndex] > max {
+			max = X[v][attrIndex]
 		}
-		if X[i][attrIndex] < min {
-			min = X[i][attrIndex]
+		if X[v][attrIndex] < min {
+			min = X[v][attrIndex]
 		}
 	}
 
-	// calculate a float in the range between min and max
+	// calculate a random float in the range between min and max
 	return min + rand.Float64()*(max-min)
 }
 

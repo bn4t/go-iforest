@@ -1,7 +1,6 @@
-package go_iforest
+package main
 
 import (
-	"log"
 	"math"
 	"math/rand"
 )
@@ -12,6 +11,8 @@ type IForest struct {
 }
 
 // NewIForest creates a new IForest and trains it on the provided data X
+// make sure to call rand.Seed() before calling this function to ensure that
+// a sufficiently random sub-sample is chosen.
 func NewIForest(X [][]float64, trees int, subSamplingSize int) (*IForest, error) {
 	if len(X) == 0 {
 		return nil, ErrNoSamplesProvided
@@ -23,24 +24,24 @@ func NewIForest(X [][]float64, trees int, subSamplingSize int) (*IForest, error)
 
 	forest := IForest{Trees: []*ITree{}, SubSamplingSize: subSamplingSize}
 
-	// set tree height limit
-	l := math.Ceil(math.Log2(float64(subSamplingSize)))
-
 	// always choose a different sub-sample from the dataset
 	for i := 0; i < trees; i++ {
 
-		duplicate := make([][]float64, len(X))
+		// duplicate the multidimensional X slice to prevent modifying it
+		// when selecting hte sub-sample
+		duplicateX := make([][]float64, len(X))
 		for i := range X {
-			duplicate[i] = make([]float64, len(X[i]))
-			copy(duplicate[i], X[i])
+			duplicateX[i] = make([]float64, len(X[i]))
+			copy(duplicateX[i], X[i])
 		}
 
-		forest.Trees = append(forest.Trees, NewITree(subSample(duplicate, subSamplingSize), l))
+		forest.Trees = append(forest.Trees, NewITree(subSample(duplicateX, subSamplingSize)))
 	}
 
 	return &forest, nil
 }
 
+// CalculateAnomalyScore calculates an anomaly score based for a sample x
 func (f *IForest) CalculateAnomalyScore(x []float64) float64 {
 	var sumPathLength float64
 
@@ -49,10 +50,10 @@ func (f *IForest) CalculateAnomalyScore(x []float64) float64 {
 	}
 
 	avgPath := sumPathLength / float64(len(f.Trees))
-	log.Print(avgPath)
-	return math.Pow(2, -1*(avgPath/avgPathLength(float64(f.SubSamplingSize))))
+	return math.Pow(2, -avgPath/avgPathLength(float64(f.SubSamplingSize)))
 }
 
+// subSample chooses a random sub sample from the provided data X
 func subSample(X [][]float64, v int) [][]float64 {
 	var r int
 	var sample [][]float64
