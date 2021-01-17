@@ -48,7 +48,7 @@ func (f *IForest) CalculateAnomalyScore(x []float64) float64 {
 	var sumPathLength float64
 
 	for _, T := range f.Trees {
-		sumPathLength += PathLength(x, T.RootNode, 0)
+		sumPathLength += PathLength(x, T.rootNode, 0)
 	}
 
 	avgPath := sumPathLength / float64(len(f.Trees))

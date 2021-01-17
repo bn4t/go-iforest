@@ -11,15 +11,15 @@ type ITree struct {
 	// The root node of the tree
 	// From this node all child nodes can be accessed by
 	// following the Node{Left,Right} variables
-	RootNode *Node
+	rootNode *Node
 
 	// The height limit of the tree, calculated using
 	// ceiling(log2(v)) where v is the sub-sampling size
-	HeightLimit float64
+	heightLimit float64
 
 	// The average path length of this tree, calculated
 	// using avgPathLength()
-	AvgPathLength float64
+	avgPathLength float64
 }
 
 type Node struct {
@@ -28,14 +28,14 @@ type Node struct {
 	size int
 
 	// the split point of this node
-	SplitPoint float64
+	splitPoint float64
 
 	// index of the attribute used for the split point
-	SplitAttrIndex int
+	splitAttrIndex int
 
-	NodeLeft  *Node
-	NodeRight *Node
-	External  bool
+	nodeLeft  *Node
+	nodeRight *Node
+	external  bool
 }
 
 func NewITree(X [][]float64) *ITree {
@@ -48,9 +48,9 @@ func NewITree(X [][]float64) *ITree {
 	}
 
 	return &ITree{
-		RootNode:      nextNode(X, indices, 0, l),
-		HeightLimit:   l,
-		AvgPathLength: avgPathLength(float64(len(X))),
+		rootNode:      nextNode(X, indices, 0, l),
+		heightLimit:   l,
+		avgPathLength: avgPathLength(float64(len(X))),
 	}
 }
 
@@ -61,7 +61,7 @@ func nextNode(X [][]float64, indices []int, e float64, l float64) *Node {
 	if e >= l || len(indices) <= 1 {
 		return &Node{
 			size:     len(indices),
-			External: true,
+			external: true,
 		}
 	}
 
@@ -84,11 +84,11 @@ func nextNode(X [][]float64, indices []int, e float64, l float64) *Node {
 	}
 
 	return &Node{
-		SplitPoint:     p,
-		SplitAttrIndex: q,
-		NodeLeft:       nextNode(X, IndicesL, e+1, l),
-		NodeRight:      nextNode(X, IndicesR, e+1, l),
-		External:       false,
+		splitPoint:     p,
+		splitAttrIndex: q,
+		nodeLeft:       nextNode(X, IndicesL, e+1, l),
+		nodeRight:      nextNode(X, IndicesR, e+1, l),
+		external:       false,
 	}
 }
 
@@ -96,7 +96,7 @@ func nextNode(X [][]float64, indices []int, e float64, l float64) *Node {
 // e is the current path length (0 on the first call to this method)
 func PathLength(x []float64, T *Node, e int) float64 {
 
-	if T.External {
+	if T.external {
 		if T.size <= 1 {
 			return float64(e)
 		} else {
@@ -108,10 +108,10 @@ func PathLength(x []float64, T *Node, e int) float64 {
 		}
 	}
 
-	if x[T.SplitAttrIndex] < T.SplitPoint {
-		return PathLength(x, T.NodeLeft, e+1)
+	if x[T.splitAttrIndex] < T.splitPoint {
+		return PathLength(x, T.nodeLeft, e+1)
 	} else {
-		return PathLength(x, T.NodeRight, e+1)
+		return PathLength(x, T.nodeRight, e+1)
 	}
 }
 
