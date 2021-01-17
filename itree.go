@@ -48,14 +48,14 @@ func NewITree(X [][]float64) *ITree {
 	}
 
 	return &ITree{
-		RootNode:      NextNode(X, indices, 0, l),
+		RootNode:      nextNode(X, indices, 0, l),
 		HeightLimit:   l,
 		AvgPathLength: avgPathLength(float64(len(X))),
 	}
 }
 
-// NextNode creates a new node in the tree
-func NextNode(X [][]float64, indices []int, e float64, l float64) *Node {
+// nextNode creates a new node in the tree
+func nextNode(X [][]float64, indices []int, e float64, l float64) *Node {
 	// return an external node, if only one sample remains
 	// or the max tree height is reached.
 	if e >= l || len(indices) <= 1 {
@@ -86,8 +86,8 @@ func NextNode(X [][]float64, indices []int, e float64, l float64) *Node {
 	return &Node{
 		SplitPoint:     p,
 		SplitAttrIndex: q,
-		NodeLeft:       NextNode(X, IndicesL, e+1, l),
-		NodeRight:      NextNode(X, IndicesR, e+1, l),
+		NodeLeft:       nextNode(X, IndicesL, e+1, l),
+		NodeRight:      nextNode(X, IndicesR, e+1, l),
 		External:       false,
 	}
 }
