@@ -1,5 +1,5 @@
 # go-iforest
-[![godocs.io](https://godocs.io/github.com/codegaudi/go-iforest?status.svg)](https://godocs.io/github.com/codegaudi/go-iforest)
+[![godocs.io](https://godocs.io/github.com/bn4t/go-iforest?status.svg)](https://godocs.io/github.com/bn4t/go-iforest)
 
 Golang implementation of [Isolation Forest](https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf).
 
@@ -8,31 +8,36 @@ Golang implementation of [Isolation Forest](https://cs.nju.edu.cn/zhouzh/zhouzh.
 package main
 
 import (
-	go_iforest "github.com/codegaudi/go-iforest"
+	"fmt"
 	"log"
 	"math/rand"
-	"time"
+
+	go_iforest "github.com/bn4t/go-iforest"
 )
 
-
 func main() {
+	// seed the random generator before generating the isolation forest
+	rand.Seed(42)
 
-	// load input data into two-dimensional slice
-	var inputData [][]float64
-	
-	// seed the random generator before generating an isolation forest
-	rand.Seed(time.Now().UnixNano())
+	// generate 1000 samples with two normally distributed features
+	inputData := make([][]float64, 1000)
+	for i := range inputData {
+		inputData[i] = []float64{rand.NormFloat64(), rand.NormFloat64()}
+	}
 
-	// generate an isolation forest with 10'000 trees and a sub-sampling size of 256
-	f, err := go_iforest.NewIForest(inputData, 10000, 256)
+	// generate an isolation forest with 100 trees and a sub-sampling size of 256
+	f, err := go_iforest.NewIForest(inputData, 100, 256)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// calculate an anomaly score for a sample
-	score := f.CalculateAnomalyScore(inputData[0])
+	// scores close to 1 indicate anomalies, scores around 0.5 are normal
+	fmt.Println(f.CalculateAnomalyScore(inputData[0]))    // around 0.5
+	fmt.Println(f.CalculateAnomalyScore([]float64{8, 8})) // clearly anomalous
 }
 ```
+
+The sub-sampling size must be at least 2 and at most the amount of provided samples.
 
 ## License
 

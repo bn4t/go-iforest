@@ -1,3 +1,3 @@
-module github.com/codegaudi/go-iforest
+module github.com/bn4t/go-iforest
 
 go 1.15
